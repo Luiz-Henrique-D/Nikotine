@@ -2,16 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-void insertAtHead(TokenNode **head, TokenType type, char *value)
+void insertAtHead(TokenNode **head, TokenType type, char *literal)
 {
-    TokenNode *newNode = createNodeToken(type, value);
+    TokenNode *newNode = createNodeToken(type, literal);
     newNode->next = *head;
     *head = newNode;
 }
 
-void insertAtTail(TokenNode **head, TokenType type, char *value)
+void printNodes(TokenNode **head)
 {
-    TokenNode *newNode = (TokenNode *)malloc(sizeof(TokenNode));
+    TokenNode *current = *head;
+    while (current != NULL)
+    {
+        printf("Token type: %d\nToken literal: %s\n", current->token->type, current->token->literal);
+        current = current->next;
+    }
+}
+
+void insertAtTail(TokenNode **head, TokenType type, char *literal)
+{
+    TokenNode *newNode = createNodeToken(type, literal);
+
     if (*head == NULL)
     {
         *head = newNode;
@@ -23,10 +34,11 @@ void insertAtTail(TokenNode **head, TokenType type, char *value)
     {
         current = current->next;
     }
+
     current->next = newNode;
 }
 
-TokenNode *createNodeToken(TokenType type, const char *value)
+TokenNode *createNodeToken(TokenType type, char *literal)
 {
     TokenNode *newNode = (TokenNode *)malloc(sizeof(TokenNode));
     if (newNode == NULL)
@@ -42,7 +54,8 @@ TokenNode *createNodeToken(TokenType type, const char *value)
         exit(1);
     }
     token->type = type;
-    token = value = strdup(value);
+    token->literal = strdup(literal);
     newNode->token = token;
     newNode->next = NULL;
+    return newNode;
 }

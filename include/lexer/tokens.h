@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include "lexer/lexer.h"
-void insertAtHead(TokenNode **head, TokenType type, char *value);
-void insertAtTail(TokenNode **head, TokenType type, char *value);
-TokenNode *createNodeToken(TokenType type, const char *value);
+
 typedef enum TokeType
 {
+    TOKEN_DELIMITER,
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
     TOKEN_OPERATOR,
-    TOKEN_DELIMITER,
     TOKEN_KEYWORD,
     TOKEN_COMMENT,
     TOKEN_EOF,
@@ -18,7 +16,7 @@ typedef enum TokeType
 typedef struct
 {
     TokenType type;
-    char *value;
+    char *literal;
 } Token;
 
 typedef struct TokenNode
@@ -26,3 +24,8 @@ typedef struct TokenNode
     Token *token;
     struct TokenNode *next;
 } TokenNode;
+
+void insertAtHead(TokenNode **head, TokenType type, char *literal);
+void insertAtTail(TokenNode **head, TokenType type, char *literal);
+void printNodes(TokenNode **head);
+TokenNode *createNodeToken(TokenType type, char *literal);
