@@ -3,15 +3,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <lexer/tokens.h>
+TokenNode *head = NULL;
+
+const Token KEYWORDS[] = {
+    {.type = TOKEN_KEYWORD_FUNCTION, .literal = "fun"}, {.type = TOKEN_KEYWORD_LET, .literal = "let"}};
+
+void newToken(char *src, int index, TokenType type)
+{
+    char bff[2] = {src[index],
+                   '\0'};
+    insertAtTail(&head, TOKEN_OPERATOR_ASTERISK, strdup(bff));
+}
+
 int isSkippableCharacter(char c)
 {
     return c == ' ' || c == '\n' || c == '\0';
 }
-TokenNode *head = NULL;
 
 int isADigit(char c)
 {
     return c > '0' && c < '9';
+}
+
+int isAlphabetLowerCase(char c)
+{
+    return c >= 'a' && c <= 'z';
 }
 
 void grammarWrapLexically(char *src, size_t *size)
@@ -21,22 +37,45 @@ void grammarWrapLexically(char *src, size_t *size)
         switch (src[i])
         {
         case '(':
+            newToken(src, i, TOKEN_DELIMITER_PAREN_OPEN);
+            break;
         case ')':
-            // Adiciona um token de delimitador
-            char delimiter[2] = {src[i], '\0'};
-            insertAtTail(&head, TOKEN_DELIMITER, strdup(delimiter));
+            newToken(src, i, TOKEN_DELIMITER_PAREN_CLOSE);
             break;
         case '+':
+            newToken(src, i, TOKEN_OPERATOR_PLUS);
+            break;
         case '-':
-            // Adiciona um token de operador
-            char operator[2] = { src[i],
-                                 '\0' };
-            insertAtTail(&head, TOKEN_OPERATOR, strdup(operator));
+            newToken(src, i, TOKEN_OPERATOR_MINUS);
+            break;
+        case '/':
+            newToken(src, i, TOKEN_OPERATOR_SLASH);
+            break;
+        case '*':
+            newToken(src, i, TOKEN_OPERATOR_ASTERISK);
             break;
         default:
+            if (isAlphabetLowerCase(src[i]))
+            {
+                char buffer[256];
+                int j = 0;
+                while (i < *size && isAlphabetLowerCase(src[i]))
+                {
+                    buffer[j++] = src[i++];
+                }
+                buffer[j] = '\0';
+                for (j = 0; j < sizeof(KEYWORDS) / sizeof(KEYWORDS[0]); j++)
+                {
+
+                    if (strcmp(buffer, KEYWORDS[j].literal) == 0)
+                    {
+                        insertAtTail(&head, KEYWORDS[j].type, strdup(buffer));
+                    }
+                }
+                i--;
+            }
             if (isADigit(src[i]))
             {
-                // Construa o literal do número
                 char buffer[256];
                 int j = 0;
                 while (i < *size && isADigit(src[i]))
@@ -45,15 +84,16 @@ void grammarWrapLexically(char *src, size_t *size)
                 }
                 buffer[j] = '\0';
                 insertAtTail(&head, TOKEN_NUMBER, strdup(buffer));
-                i--; // Reajusta o índice
+                i--;
             }
             else if (isSkippableCharacter(src[i]))
             {
-                // Ignora caracteres não relevantes
                 continue;
             }
+
             break;
         }
     }
     printNodes(&head);
+    freeNodes(&head);
 }

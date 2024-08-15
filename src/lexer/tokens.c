@@ -2,11 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-void insertAtHead(TokenNode **head, TokenType type, char *literal)
+void freeNodes(TokenNode **head)
 {
-    TokenNode *newNode = createNodeToken(type, literal);
-    newNode->next = *head;
-    *head = newNode;
+    TokenNode *current = *head;
+    TokenNode *next;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current->token);
+        free(current);
+        current = next;
+    }
+    *head = NULL;
 }
 
 void printNodes(TokenNode **head)
@@ -18,7 +26,12 @@ void printNodes(TokenNode **head)
         current = current->next;
     }
 }
-
+void insertAtHead(TokenNode **head, TokenType type, char *literal)
+{
+    TokenNode *newNode = createNodeToken(type, literal);
+    newNode->next = *head;
+    *head = newNode;
+}
 void insertAtTail(TokenNode **head, TokenType type, char *literal)
 {
     TokenNode *newNode = createNodeToken(type, literal);
@@ -37,7 +50,6 @@ void insertAtTail(TokenNode **head, TokenType type, char *literal)
 
     current->next = newNode;
 }
-
 TokenNode *createNodeToken(TokenType type, char *literal)
 {
     TokenNode *newNode = (TokenNode *)malloc(sizeof(TokenNode));
