@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "parser/parser.h"
 
 int convertToInt(char *value)
@@ -32,22 +33,6 @@ ASTNode *createASTBinaryOP(ASTNode *left, ASTNode *right, char *op)
     newNode->BINARY_EXPRESSION.op = *op;
     newNode->type = NODE_BINARYOP;
     return newNode;
-}
-
-int precedence(char op)
-{
-    switch (op)
-    {
-    case '+':
-    case '-':
-        return 1;
-    case '*':
-    case '/':
-        return 2;
-    default:
-        return 0;
-        break;
-    }
 }
 
 TokenNode *currentTokenNode(TokenNode **tk)
@@ -83,6 +68,10 @@ ASTNode *parsePrimary(TokenNode **tk)
     {
         nextTokenNode(tk);
         ASTNode *node = parseExpression(tk);
+        if (node == NULL)
+        {
+            fprintf(stderr, "Unexpected express at (");
+        }
         token = currentTokenNode(tk);
 
         if (token->token->type == TOKEN_DELIMITER_PAREN_CLOSE)
@@ -95,31 +84,64 @@ ASTNode *parsePrimary(TokenNode **tk)
     return NULL;
 }
 
+ASTNode *parseTerm(TokenNode **tk)
+{
+    ASTNode *node = parsePrimary(tk);
+    if (node == NULL)
+        return NULL;
+    while (1)
+    {
+        TokenNode *token = currentTokenNode(tk);
+        if (token == NULL)
+            return NULL;
+        if (token->token->type == TOKEN_OPERATOR && (strcmp(token->token->literal, "*") == 0 || strcmp(token->token->literal, "/") == 0))
+        {
+            char *op = token->token->literal;
+            nextTokenNode(tk);
+            ASTNode *right = parsePrimary(tk);
+            if (right == NULL)
+            {
+                fprintf(stderr, "Unexpected token after *");
+                exit(EXIT_FAILURE);
+            }
+            node = createASTBinaryOP(node, right, op);
+        }
+        else
+        {
+            break;
+        }
+    }
+    return node;
+}
+
 ASTNode *parseExpression(TokenNode **tk)
 {
     ASTNode *node = parsePrimary(tk);
     if (node == NULL)
         return NULL;
 
-    TokenNode *token = currentTokenNode(tk);
-
-    while (token && (token->token->type == TOKEN_OPERATOR))
+    while (1)
     {
-        char *op = token->token->literal;
+        TokenNode *token = currentTokenNode(tk);
+        if ((strcmp(token->token->literal, "+") == 0 || strcmp(token->token->literal, "-") == 0) && (token->token->type == TOKEN_OPERATOR))
+        {
+            char *op = token->token->literal;
 
-        nextTokenNode(tk); // Consome o operador
-        ASTNode *right = parsePrimary(tk);
+            nextTokenNode(tk); // Consome o operador
+            ASTNode *right = parseTerm(tk);
 
-        if (right == NULL)
-            return NULL;
-        node = createASTBinaryOP(node, right, op);
-        token = currentTokenNode(tk);
+            if (right == NULL)
+                return NULL;
+            node = createASTBinaryOP(node, right, op);
+            token = currentTokenNode(tk);
+        }
     }
     return node;
 }
 
 void astPrint(ASTNode *node)
 {
+    printf("teste");
     if (node == NULL)
         return;
     if (node->type == NODE_NUMBER)

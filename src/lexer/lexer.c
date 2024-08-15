@@ -80,6 +80,7 @@ void grammarWrapLexically(char *src, size_t *size)
     printNodes(&head);
 
     ASTNode *root = parseExpression(&head);
+    printf("aaaaaaaaaa %d", root->value);
     astPrint(root);
 
     freeNodes(&head);
