@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "lexer/lexer.h"
 
 typedef enum TokeType
 {
@@ -12,11 +11,7 @@ typedef enum TokeType
     TOKEN_DELIMITER_PAREN_CLOSE,
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
-    TOKEN_OPERATOR_SLASH,
-    TOKEN_OPERATOR_ASTERISK,
-    TOKEN_OPERATOR_PLUS,
-    TOKEN_OPERATOR_MINUS,
-    TOKEN_OPERATOR_ASSIGN,
+    TOKEN_OPERATOR,
     TOKEN_KEYWORD_LET,
     TOKEN_KEYWORD_FUNCTION,
     TOKEN_COMMENT,
@@ -34,9 +29,15 @@ typedef struct TokenNode
     Token *token;
     struct TokenNode *next;
 } TokenNode;
-
+typedef struct Parser
+{
+    TokenNode *tokens;
+    int index;
+    int count;
+} Parser;
 void freeNodes(TokenNode **head);
 void insertAtHead(TokenNode **head, TokenType type, char *literal);
 void insertAtTail(TokenNode **head, TokenType type, char *literal);
 void printNodes(TokenNode **head);
+
 TokenNode *createNodeToken(TokenType type, char *literal);

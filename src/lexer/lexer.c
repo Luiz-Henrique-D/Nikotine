@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <lexer/tokens.h>
+#include "utils/utils.h"
+#include "parser/parser.h"
 TokenNode *head = NULL;
+
+struct Parser parser;
 
 const Token KEYWORDS[] = {
     {.type = TOKEN_KEYWORD_FUNCTION, .literal = "fun"}, {.type = TOKEN_KEYWORD_LET, .literal = "let"}};
@@ -12,22 +15,7 @@ void newToken(char *src, int index, TokenType type)
 {
     char bff[2] = {src[index],
                    '\0'};
-    insertAtTail(&head, TOKEN_OPERATOR_ASTERISK, strdup(bff));
-}
-
-int isSkippableCharacter(char c)
-{
-    return c == ' ' || c == '\n' || c == '\0';
-}
-
-int isADigit(char c)
-{
-    return c > '0' && c < '9';
-}
-
-int isAlphabetLowerCase(char c)
-{
-    return c >= 'a' && c <= 'z';
+    insertAtTail(&head, TOKEN_OPERATOR, strdup(bff));
 }
 
 void grammarWrapLexically(char *src, size_t *size)
@@ -43,16 +31,10 @@ void grammarWrapLexically(char *src, size_t *size)
             newToken(src, i, TOKEN_DELIMITER_PAREN_CLOSE);
             break;
         case '+':
-            newToken(src, i, TOKEN_OPERATOR_PLUS);
-            break;
         case '-':
-            newToken(src, i, TOKEN_OPERATOR_MINUS);
-            break;
         case '/':
-            newToken(src, i, TOKEN_OPERATOR_SLASH);
-            break;
         case '*':
-            newToken(src, i, TOKEN_OPERATOR_ASTERISK);
+            newToken(src, i, TOKEN_OPERATOR);
             break;
         default:
             if (isAlphabetLowerCase(src[i]))
@@ -94,6 +76,11 @@ void grammarWrapLexically(char *src, size_t *size)
             break;
         }
     }
+
     printNodes(&head);
+
+    ASTNode *root = parseExpression(&head);
+    astPrint(root);
+
     freeNodes(&head);
 }
